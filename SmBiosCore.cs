@@ -114,6 +114,7 @@ namespace SmBiosCore
                 }
                 else
                     InvalidData();
+                data = data.Skip(32).ToArray();
             }
             else
             {
@@ -138,6 +139,7 @@ namespace SmBiosCore
         {
             i = 0;
             _reader = new BinaryReader(new MemoryStream(data));
+           
             Entry entry = null;
             while (true)
             {
