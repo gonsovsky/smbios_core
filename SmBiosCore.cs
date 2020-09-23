@@ -2,21 +2,24 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
+#if NETCOREAPP
+using System.Runtime.InteropServices;
+#else
+using System.Management;   
+#endif
 
 namespace SmBiosCore
 {
     public class SmBiosCore
-    {     
+    {
+
+#if NETCOREAPP
         protected static bool IsWin => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        protected static bool IsDotnetFull => false;
 
-        protected const string SmBiosFolder = "/sys/firmware/dmi/tables/";
-        protected const string DmiFile = "DMI";
-        protected const string EntryFile = "smbios_entry_point";
-
-        [DllImport("kernel32.dll")]
-        protected static extern uint GetSystemFirmwareTable(
+       [DllImport("kernel32.dll")]
+       protected static extern uint GetSystemFirmwareTable(
             uint FirmwareTableProviderSignature,
             uint FirmwareTableID,
             [Out, MarshalAs(UnmanagedType.LPArray)]
@@ -26,19 +29,44 @@ namespace SmBiosCore
         protected byte[] GetWinDmi()
         {
             byte[] byteSignature = {(byte) 'B', (byte) 'M', (byte) 'S', (byte) 'R'};
-            var signature = BitConverter.ToUInt32(byteSignature);
+            var signature = BitConverter.ToUInt32(byteSignature, 0);
             uint size = GetSystemFirmwareTable(signature, 0, null, 0);
             var data = new byte[size];
             if (size != GetSystemFirmwareTable(signature, 0, data, size))
                 InvalidData();
             return data;
         }
+#else
+        protected static bool IsWin => true;
+        protected static bool IsDotnetFull => true;
+
+        protected byte[] GetWinDmi()
+        {
+            ManagementScope scope = new ManagementScope("\\\\" + "." + "\\root\\WMI");
+            scope.Connect();
+            ObjectQuery wmiquery = new ObjectQuery("SELECT * FROM MSSmBios_RawSMBiosTables");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, wmiquery);
+            ManagementObjectCollection coll = searcher.Get();
+            foreach (ManagementObject queryObj in coll)
+            {
+                if (queryObj["SMBiosData"] != null) data = (byte[])(queryObj["SMBiosData"]);
+                //if (queryObj["SmbiosMajorVersion"] != null) m_byMajorVersion = (byte)(queryObj["SmbiosMajorVersion"]);
+                //if (queryObj["SmbiosMinorVersion"] != null) m_byMinorVersion = (byte)(queryObj["SmbiosMinorVersion"]);
+                //if (queryObj["Size"] != null) m_dwLen = (long)(queryObj["Size"]);
+                //m_dwLen = m_pbBIOSData.Length;
+            }
+            return data;
+        }
+#endif
+        protected const string SmBiosFolder = "/sys/firmware/dmi/tables/";
+        protected const string DmiFile = "DMI";
+        protected const string EntryFile = "smbios_entry_point";
 
         protected static byte[] GetUnixDmi()
         {
             var p1 = File.ReadAllBytes(Path.Combine(SmBiosFolder, DmiFile));
             var p2 = File.ReadAllBytes(Path.Combine(SmBiosFolder, EntryFile));
-            p1 = p2.Concat(new byte[]{0}).Concat(p1).ToArray();
+            p1 = p2.Concat(new byte[] { 0 }).Concat(p1).ToArray();
             return p1;
         }
 
@@ -51,10 +79,12 @@ namespace SmBiosCore
         public SmBiosCore()
         {
             if (IsWin)
+            {
                 data = GetWinDmi();
+            }
             else
                 data = GetUnixDmi();
-            CheckBios();
+            ValidateBiosData();
             Traverse();
         }
 
@@ -78,9 +108,9 @@ namespace SmBiosCore
         protected const int DMI_TYPE_PHYSMEM = 16;
         protected const int DMI_TYPE_MEMORY = 17;
 
-        public const int DMI_ENTRY_HEADER_SIZE = 4;
+        protected const int DMI_ENTRY_HEADER_SIZE = 4;
 
-        private void CheckBios()
+        protected void ValidateBiosData()
         {
             int vn = 0;
             if (IsWin == false)
@@ -119,7 +149,8 @@ namespace SmBiosCore
             else
             {
                 vn = data[1] << 8 | data[2];
-                data = data.Skip(8).ToArray();
+                if (IsDotnetFull == false)
+                    data = data.Skip(8).ToArray();
             }
 
             if (_version == 0) _version = SMBIOS_3_0;
@@ -168,6 +199,8 @@ namespace SmBiosCore
             while (i < data.Length)
             {
                 var type = data[i];
+                if (type == 127)
+                    return null;
                 Entry result = null;
                 if (type == DMI_TYPE_BIOS)
                     result = new TypeBios();
@@ -192,7 +225,7 @@ namespace SmBiosCore
             throw new ApplicationException();
         }
 
-        #region BiosTables
+#region BiosTables
         public class TypeBios : Entry
         {
             internal int Vendor_;
@@ -578,6 +611,6 @@ namespace SmBiosCore
 
             protected virtual void ParseBody() { }
         }
-        #endregion
+#endregion
     }
 }
