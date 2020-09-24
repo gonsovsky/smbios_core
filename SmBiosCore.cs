@@ -11,7 +11,7 @@ using System.Management;
 
 namespace SmBiosCore
 {
-    public class SmBiosCore
+    public class SmBiosParser
     {
 #if NETCOREAPP
         protected void GetDmi()
@@ -103,17 +103,23 @@ namespace SmBiosCore
         }
 #endif
 
-        public SmBiosCore()
+        public SmBiosParser()
         {
+            Result = new SmBios();
             GetDmi();
             Traverse();
         }
 
-        public List<TypeBios> Bios = new List<TypeBios> { };
-        public List<TypeMemoryDevice> Memory = new List<TypeMemoryDevice> { };
-        public List<TypePhysicalMemory> PhyMemory = new List<TypePhysicalMemory> { };
-        public List<TypeBaseboard> BaseBoard = new List<TypeBaseboard> { };
-        public List<TypeProcessor> Processor = new List<TypeProcessor> { };
+        public class SmBios
+        {
+            public List<TypeBios> Bios = new List<TypeBios> { };
+            public List<TypeMemoryDevice> Memory = new List<TypeMemoryDevice> { };
+            public List<TypePhysicalMemory> PhyMemory = new List<TypePhysicalMemory> { };
+            public List<TypeBaseboard> BaseBoard = new List<TypeBaseboard> { };
+            public List<TypeProcessor> Processor = new List<TypeProcessor> { };
+        }
+
+        public SmBios Result;
 
         protected const int SMBIOS_2_0 = 0x0200;
         protected const int SMBIOS_2_1 = 0x0201;
@@ -157,15 +163,15 @@ namespace SmBiosCore
                 if (reader.BaseStream.Position == reader.BaseStream.Length)
                     break;
                 if (entry.GetType() == typeof(TypeBios))
-                    Bios.Add(entry as TypeBios);
+                    Result.Bios.Add(entry as TypeBios);
                 if (entry.GetType() == typeof(TypeMemoryDevice))
-                    Memory.Add(entry as TypeMemoryDevice);
+                    Result.Memory.Add(entry as TypeMemoryDevice);
                 if (entry.GetType() == typeof(TypePhysicalMemory))
-                    PhyMemory.Add(entry as TypePhysicalMemory);
+                    Result.PhyMemory.Add(entry as TypePhysicalMemory);
                 if (entry.GetType() == typeof(TypeBaseboard))
-                    BaseBoard.Add(entry as TypeBaseboard);
+                    Result.BaseBoard.Add(entry as TypeBaseboard);
                 if (entry.GetType() == typeof(TypeProcessor))
-                    Processor.Add(entry as TypeProcessor);
+                    Result.Processor.Add(entry as TypeProcessor);
             }
             reader.Dispose();
             data = null;
@@ -200,6 +206,55 @@ namespace SmBiosCore
         protected void InvalidData()
         {
             throw new ApplicationException();
+        }
+
+        public class Entry
+        {
+            private byte type;
+            private byte length;
+            private short handle;
+
+            protected int version;
+            protected BinaryReader reader;
+            protected string[] strs = new string[] { };
+
+            protected string GetString(int b)
+            {
+                if (b <= 0) return "";
+                if (b > strs.Length)
+                    return "";
+                return strs[b - 1];
+            }
+
+            public void Parse(SmBiosParser parser)
+            {
+                reader = parser.reader;
+                version = parser.version;
+                type = parser.data[parser.i];
+                length = parser.data[parser.i + 1];
+                handle = BitConverter.ToInt16(parser.data, parser.i + 2);
+                parser.reader.BaseStream.Seek(parser.i + 4, SeekOrigin.Begin);
+                byte[] p_bFormattedSection;
+                byte[] p_bUnformattedSection;
+                p_bFormattedSection = parser.data.Skip(parser.i).Take(length).ToArray();
+                for (int j = parser.i + length; ; j++)
+                {
+                    if ((parser.data[j] == 0) && (parser.data[j + 1] == 0))
+                    {
+                        p_bUnformattedSection = parser.data.Skip(parser.i + length).Take(j - parser.i - length).ToArray();
+                        parser.i = j + 2;
+                        break;
+                    }
+                }
+                strs = new string[] { };
+                if (p_bUnformattedSection.Length > 0)
+                    strs = Encoding.ASCII.GetString(p_bUnformattedSection).Split('\0');
+                ParseBody();
+                strs = new string[] { };
+                parser.reader.BaseStream.Seek(parser.i, SeekOrigin.Begin);
+            }
+
+            protected virtual void ParseBody() { }
         }
 
         #region BiosTables
@@ -521,55 +576,6 @@ namespace SmBiosCore
                     ThreadCount2 = reader.ReadUInt16();
                 }
             }
-        }
-
-        public class Entry
-        {
-            private byte type;
-            private byte length;
-            private short handle;
-
-            protected int version;
-            protected BinaryReader reader;
-            protected string[] strs = new string[] { };
-
-            protected string GetString(int b)
-            {
-                if (b <= 0) return "";
-                if (b > strs.Length)
-                    return "";
-                return strs[b - 1];
-            }
-
-            public void Parse(SmBiosCore parser)
-            {
-                reader = parser.reader;
-                version = parser.version;
-                type = parser.data[parser.i];
-                length = parser.data[parser.i + 1];
-                handle = BitConverter.ToInt16(parser.data, parser.i + 2);
-                parser.reader.BaseStream.Seek(parser.i + 4, SeekOrigin.Begin);
-                byte[] p_bFormattedSection;
-                byte[] p_bUnformattedSection;
-                p_bFormattedSection = parser.data.Skip(parser.i).Take(length).ToArray();
-                for (int j = parser.i + length; ; j++)
-                {
-                    if ((parser.data[j] == 0) && (parser.data[j + 1] == 0))
-                    {
-                        p_bUnformattedSection = parser.data.Skip(parser.i + length).Take(j - parser.i - length).ToArray();
-                        parser.i = j + 2;
-                        break;
-                    }
-                }
-                strs = new string[] { };
-                if (p_bUnformattedSection.Length > 0)
-                    strs = Encoding.ASCII.GetString(p_bUnformattedSection).Split('\0');
-                ParseBody();
-                strs = new string[] { };
-                parser.reader.BaseStream.Seek(parser.i, SeekOrigin.Begin);
-            }
-
-            protected virtual void ParseBody() { }
         }
         #endregion
     }

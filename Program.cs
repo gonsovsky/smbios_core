@@ -7,7 +7,7 @@ namespace SmBiosCore
     {
         static void Main(string[] args)
         {
-            var x = new SmBiosCore();
+            var x = new SmBiosParser().Result;
             var output = JsonConvert.SerializeObject(x, Formatting.Indented);
             Console.WriteLine(output);
             Console.ReadKey();
