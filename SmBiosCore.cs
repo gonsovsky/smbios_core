@@ -22,17 +22,17 @@ namespace SmBiosCore
                 GetUnixDmi();
         }
 
-       [DllImport("kernel32.dll")]
-       protected static extern uint GetSystemFirmwareTable(
-            uint FirmwareTableProviderSignature,
-            uint FirmwareTableID,
-            [Out, MarshalAs(UnmanagedType.LPArray)]
+        [DllImport("kernel32.dll")]
+        protected static extern uint GetSystemFirmwareTable(
+             uint FirmwareTableProviderSignature,
+             uint FirmwareTableID,
+             [Out, MarshalAs(UnmanagedType.LPArray)]
             byte[] pFirmwareTableBuffer,
-            uint BufferSize);
+             uint BufferSize);
 
         protected void GetWinDmi()
         {
-            byte[] byteSignature = {(byte) 'B', (byte) 'M', (byte) 'S', (byte) 'R'};
+            byte[] byteSignature = { (byte)'B', (byte)'M', (byte)'S', (byte)'R' };
             var signature = BitConverter.ToUInt32(byteSignature, 0);
             uint size = GetSystemFirmwareTable(signature, 0, null, 0);
             data = new byte[size];
@@ -109,7 +109,7 @@ namespace SmBiosCore
             Traverse();
         }
 
-        public List<TypeBios> Bios = new List<TypeBios> {};
+        public List<TypeBios> Bios = new List<TypeBios> { };
         public List<TypeMemoryDevice> Memory = new List<TypeMemoryDevice> { };
         public List<TypePhysicalMemory> PhyMemory = new List<TypePhysicalMemory> { };
         public List<TypeBaseboard> BaseBoard = new List<TypeBaseboard> { };
@@ -147,7 +147,7 @@ namespace SmBiosCore
         {
             i = 0;
             reader = new BinaryReader(new MemoryStream(data));
-           
+
             Entry entry = null;
             while (true)
             {
@@ -191,7 +191,7 @@ namespace SmBiosCore
                     result = new TypeProcessor();
                 if (result == null)
                     result = new Entry(); //unknown
-                    result.Parse(this);
+                result.Parse(this);
                 return result;
             }
             return null;
@@ -202,13 +202,9 @@ namespace SmBiosCore
             throw new ApplicationException();
         }
 
-#region BiosTables
+        #region BiosTables
         public class TypeBios : Entry
         {
-            internal int Vendor_;
-            internal int BIOSVersion_;
-            internal int BIOSReleaseDate_;
-
             public string Vendor;
             public string BIOSVersion;
             public ushort BIOSStartingSegment;
@@ -224,6 +220,10 @@ namespace SmBiosCore
 
             protected override void ParseBody()
             {
+                int Vendor_;
+                int BIOSVersion_;
+                int BIOSReleaseDate_;
+
                 // 2.0+
                 if (version >= SMBIOS_2_0)
                 {
@@ -261,27 +261,16 @@ namespace SmBiosCore
             public ushort DataWidth;
             public ushort Size;
             public byte FormFactor;
-
             public byte DeviceSet;
-
-            internal int DeviceLocator_;
-
-            internal int BankLocator_;
-
             public string DeviceLocator;
-
             public string BankLocator;
             public byte MemoryType;
             public ushort TypeDetail;
             // 2.3+
             public ushort Speed;
-
             public string Manufacturer;
-
             public string SerialNumber;
-
             public string AssetTagNumber;
-
             public string PartNumber;
             // 2.6+
             public byte Attributes;
@@ -293,16 +282,15 @@ namespace SmBiosCore
             public ushort MaximumVoltage;
             public ushort ConfiguredVoltage;
 
-            internal int Manufacturer_;
-
-            internal int SerialNumber_;
-
-            internal int AssetTagNumber_;
-
-            internal int PartNumber_;
-
             protected override void ParseBody()
             {
+                int DeviceLocator_;          
+                int BankLocator_;
+                int Manufacturer_;
+                int SerialNumber_;
+                int AssetTagNumber_;
+                int PartNumber_;
+
                 // 2.1+
                 if (version >= SMBIOS_2_1)
                 {
@@ -389,31 +377,27 @@ namespace SmBiosCore
 
         public class TypeBaseboard : Entry
         {
-            internal int Manufacturer_;
-            internal int Product_;
-            internal int Version_;
-            internal int SerialNumber_;
-            internal int AssetTag_;
-
             public string Manufacturer;
             public string Product;
             public string Version;
-            public string SerialNumber;
-
+            public string SerialNumber;       
             public string AssetTag;
             public byte FeatureFlags;
-
-            internal int LocationInChassis_;
-
             public string LocationInChassis;
             public ushort ChassisHandle;
             public byte BoardType;
-            public byte NoOfContainedObjectHandles;
-
-            public ushort ContainedObjectHandles;
+            //public byte NoOfContainedObjectHandles;
+            //public ushort ContainedObjectHandles;
 
             protected override void ParseBody()
             {
+                int Manufacturer_;
+                int Product_;
+                int Version_;
+                int SerialNumber_;
+                int AssetTag_;
+                int LocationInChassis_;
+
                 // 2.0+
                 if (version >= SMBIOS_2_0)
                 {
@@ -426,7 +410,7 @@ namespace SmBiosCore
                     LocationInChassis_ = reader.ReadByte();
                     ChassisHandle = reader.ReadUInt16();
                     BoardType = reader.ReadByte();
-                    NoOfContainedObjectHandles = reader.ReadByte();
+                    //NoOfContainedObjectHandles = reader.ReadByte();
                     //ContainedObjectHandles = (uint16_t*)ptr_;
                     //ptr_ += entry_.data.baseboard.NoOfContainedObjectHandles * sizeof(uint16_t);
                     Manufacturer = GetString(Manufacturer_);
@@ -441,14 +425,11 @@ namespace SmBiosCore
 
         public class TypeProcessor : Entry
         {
-            internal int SocketDesignation_;
             public string SocketDesignation;
             public byte ProcessorType;
             public byte ProcessorFamily;
-            internal int ProcessorManufacturer_;
             public string ProcessorManufacturer;
             public byte[] ProcessorID = new byte[8];
-            internal int ProcessorVersion_;
             public string ProcessorVersion;
             public byte Voltage;
             public ushort ExternalClock;
@@ -461,11 +442,6 @@ namespace SmBiosCore
             public ushort L2CacheHandle;
             public ushort L3CacheHandle;
             // 2.3+
-
-            internal int SerialNumber_;
-            internal int AssetTagNumber_;
-            internal int PartNumber_;
-
             public string SerialNumber;
             public string AssetTagNumber;
             public string PartNumber;
@@ -483,6 +459,13 @@ namespace SmBiosCore
 
             protected override void ParseBody()
             {
+                int ProcessorVersion_;
+                int SocketDesignation_;
+                int ProcessorManufacturer_;
+                int SerialNumber_;
+                int AssetTagNumber_;
+                int PartNumber_;
+
                 // version 2.0
                 if (version >= SMBIOS_2_0)
                 {
@@ -542,9 +525,9 @@ namespace SmBiosCore
 
         public class Entry
         {
-            internal byte type;
-            internal byte length;
-            internal short handle;
+            private byte type;
+            private byte length;
+            private short handle;
 
             protected int version;
             protected BinaryReader reader;
@@ -588,6 +571,6 @@ namespace SmBiosCore
 
             protected virtual void ParseBody() { }
         }
-#endregion
+        #endregion
     }
 }
