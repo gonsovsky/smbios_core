@@ -24,22 +24,22 @@ namespace SmBiosCore
 
         [DllImport("kernel32.dll")]
         protected static extern uint GetSystemFirmwareTable(
-             uint FirmwareTableProviderSignature,
-             uint FirmwareTableID,
+             uint firmwareTableProviderSignature,
+             uint firmwareTableId,
              [Out, MarshalAs(UnmanagedType.LPArray)]
             byte[] pFirmwareTableBuffer,
-             uint BufferSize);
+             uint bufferSize);
 
         protected void GetWinDmi()
         {
             byte[] byteSignature = { (byte)'B', (byte)'M', (byte)'S', (byte)'R' };
             var signature = BitConverter.ToUInt32(byteSignature, 0);
             uint size = GetSystemFirmwareTable(signature, 0, null, 0);
-            data = new byte[size];
-            if (size != GetSystemFirmwareTable(signature, 0, data, size))
+            Data = new byte[size];
+            if (size != GetSystemFirmwareTable(signature, 0, Data, size))
                 InvalidData();
-            version = data[1] << 8 | data[2];
-            data = data.Skip(8).ToArray();
+            Version = Data[1] << 8 | Data[2];
+            Data = Data.Skip(8).ToArray();
         }
 
         protected const string SmBiosFolder = "/sys/firmware/dmi/tables/";
@@ -48,38 +48,38 @@ namespace SmBiosCore
 
         protected void GetUnixDmi()
         {
-            data = File.ReadAllBytes(Path.Combine(SmBiosFolder, DmiFile));
-            head = File.ReadAllBytes(Path.Combine(SmBiosFolder, EntryFile));
-            if (head[0] == '_' && head[1] == 'S' && head[2] == 'M' && head[3] == '_')
+            Data = File.ReadAllBytes(Path.Combine(SmBiosFolder, DmiFile));
+            Head = File.ReadAllBytes(Path.Combine(SmBiosFolder, EntryFile));
+            if (Head[0] == '_' && Head[1] == 'S' && Head[2] == 'M' && Head[3] == '_')
             {
-                // version 2.x
+                // VersionBI 2.x
 
                 // entry point length
-                if (head[5] != 0x1F) InvalidData();
+                if (Head[5] != 0x1F) InvalidData();
                 // entry point revision
-                if (head[10] != 0) InvalidData();
+                if (Head[10] != 0) InvalidData();
                 // intermediate anchor string
-                if (head[16] != '_' || head[17] != 'D' || head[18] != 'M' || head[19] != 'I' || head[20] != '_')
+                if (Head[16] != '_' || Head[17] != 'D' || Head[18] != 'M' || Head[19] != 'I' || Head[20] != '_')
                     InvalidData();
 
-                // get the SMBIOS version
-                version = head[6] << 8 | head[7];
+                // get the SMBIOS VersionBI
+                Version = Head[6] << 8 | Head[7];
             }
-            else if (head[0] == '_' && head[1] == 'S' && head[2] == 'M' && head[3] == '3' && head[4] == '_')
+            else if (Head[0] == '_' && Head[1] == 'S' && Head[2] == 'M' && Head[3] == '3' && Head[4] == '_')
             {
-                // version 3.x
+                // VersionBI 3.x
 
                 // entry point length
-                if (head[6] != 0x18) InvalidData();
+                if (Head[6] != 0x18) InvalidData();
                 // entry point revision
-                if (head[10] != 0x01) InvalidData();
+                if (Head[10] != 0x01) InvalidData();
 
-                // get the SMBIOS version
-                version = head[7] << 8 | head[8];
+                // get the SMBIOS VersionBI
+                Version = Head[7] << 8 | Head[8];
             }
-            if (version == 0) version = SMBIOS_3_0;
-            // is a valid version?
-            if ((version < SMBIOS_2_0 || version > SMBIOS_2_8) && version != SMBIOS_3_0)
+            if (Version == 0) Version = SMBIOS_3_0;
+            // is a valid VersionBI?
+            if ((Version < SMBIOS_2_0 || Version > SMBIOS_2_8) && Version != SMBIOS_3_0)
                 InvalidData();
         }
 #else
@@ -92,14 +92,14 @@ namespace SmBiosCore
             ManagementObjectCollection coll = searcher.Get();
             foreach (ManagementObject queryObj in coll)
             {
-                if (queryObj["SMBiosData"] != null) data = (byte[])(queryObj["SMBiosData"]);
+                if (queryObj["SMBiosData"] != null) Data = (byte[])(queryObj["SMBiosData"]);
                 //if (queryObj["SmbiosMajorVersion"] != null) m_byMajorVersion = (byte)(queryObj["SmbiosMajorVersion"]);
                 //if (queryObj["SmbiosMinorVersion"] != null) m_byMinorVersion = (byte)(queryObj["SmbiosMinorVersion"]);
                 //if (queryObj["Size"] != null) m_dwLen = (long)(queryObj["Size"]);
                 //m_dwLen = m_pbBIOSData.Length;
             }
-            if (version == 0)
-                version = SMBIOS_3_0;
+            if (Version == 0)
+                Version = SMBIOS_3_0;
         }
 #endif
 
@@ -112,11 +112,11 @@ namespace SmBiosCore
 
         public class SmBios
         {
-            public List<TypeBios> Bios = new List<TypeBios> { };
-            public List<TypeMemoryDevice> Memory = new List<TypeMemoryDevice> { };
-            public List<TypePhysicalMemory> PhyMemory = new List<TypePhysicalMemory> { };
-            public List<TypeBaseboard> BaseBoard = new List<TypeBaseboard> { };
-            public List<TypeProcessor> Processor = new List<TypeProcessor> { };
+            public List<TypeBios> Bios = new List<TypeBios>();
+            public List<TypeMemoryDevice> Memory = new List<TypeMemoryDevice>();
+            public List<TypePhysicalMemory> PhyMemory = new List<TypePhysicalMemory>();
+            public List<TypeBaseboard> BaseBoard = new List<TypeBaseboard>();
+            public List<TypeProcessor> Processor = new List<TypeProcessor>();
         }
 
         public SmBios Result;
@@ -132,35 +132,34 @@ namespace SmBiosCore
         protected const int SMBIOS_2_8 = 0x0208;
         protected const int SMBIOS_3_0 = 0x0300;
 
-        protected const int DMI_TYPE_BIOS = 0;
-        protected const int DMI_TYPE_SYSINFO = 1;
-        protected const int DMI_TYPE_BASEBOARD = 2;
-        protected const int DMI_TYPE_SYSENCLOSURE = 3;
-        protected const int DMI_TYPE_PROCESSOR = 4;
-        protected const int DMI_TYPE_SYSSLOT = 9;
-        protected const int DMI_TYPE_PHYSMEM = 16;
-        protected const int DMI_TYPE_MEMORY = 17;
+        protected const int DmiTypeBios = 0;
+        protected const int DimTypeSysInfo = 1;
+        protected const int DmiTypeBaseBoard = 2;
+        protected const int DmiTypeSysEnclosure = 3;
+        protected const int DmiTypeProcessor = 4;
+        protected const int DmiTypeSysSlot = 9;
+        protected const int DmiTypePhysmem = 16;
+        protected const int DmiTypeMemory = 17;
 
-        protected const int DMI_ENTRY_HEADER_SIZE = 4;
+        protected const int DmiEntryHeaderSize = 4;
 
-        protected byte[] data;
-        protected byte[] head;
-        protected int version;
-        protected BinaryReader reader;
-        protected int i;
+        protected byte[] Data;
+        protected byte[] Head;
+        protected int Version;
+        protected BinaryReader Reader;
+        protected int Idx;
 
         protected void Traverse()
         {
-            i = 0;
-            reader = new BinaryReader(new MemoryStream(data));
+            Idx = 0;
+            Reader = new BinaryReader(new MemoryStream(Data));
 
-            Entry entry = null;
             while (true)
             {
-                entry = Next();
+                var entry = Next();
                 if (entry == null)
                     break;
-                if (reader.BaseStream.Position == reader.BaseStream.Length)
+                if (Reader.BaseStream.Position == Reader.BaseStream.Length)
                     break;
                 if (entry.GetType() == typeof(TypeBios))
                     Result.Bios.Add(entry as TypeBios);
@@ -173,27 +172,27 @@ namespace SmBiosCore
                 if (entry.GetType() == typeof(TypeProcessor))
                     Result.Processor.Add(entry as TypeProcessor);
             }
-            reader.Dispose();
-            data = null;
+            Reader.Dispose();
+            Data = null;
         }
 
         protected Entry Next()
         {
-            while (i < data.Length)
+            while (Idx < Data.Length)
             {
-                var type = data[i];
+                var type = Data[Idx];
                 if (type == 127)
                     return null;
                 Entry result = null;
-                if (type == DMI_TYPE_BIOS)
+                if (type == DmiTypeBios)
                     result = new TypeBios();
-                if (type == DMI_TYPE_MEMORY)
+                if (type == DmiTypeMemory)
                     result = new TypeMemoryDevice();
-                if (type == DMI_TYPE_PHYSMEM)
+                if (type == DmiTypePhysmem)
                     result = new TypePhysicalMemory();
-                if (type == DMI_TYPE_BASEBOARD)
+                if (type == DmiTypeBaseBoard)
                     result = new TypeBaseboard();
-                if (type == DMI_TYPE_PROCESSOR)
+                if (type == DmiTypeProcessor)
                     result = new TypeProcessor();
                 if (result == null)
                     result = new Entry(); //unknown
@@ -210,48 +209,46 @@ namespace SmBiosCore
 
         public class Entry
         {
-            private byte type;
-            private byte length;
-            private short handle;
+            //private byte _type;
+            private byte _length;
+            //private short _handle;
 
-            protected int version;
-            protected BinaryReader reader;
-            protected string[] strs = new string[] { };
+            protected int VersionBi;
+            protected BinaryReader Reader;
+            protected string[] StringValues = { };
 
             protected string GetString(int b)
             {
                 if (b <= 0) return "";
-                if (b > strs.Length)
+                if (b > StringValues.Length)
                     return "";
-                return strs[b - 1];
+                return StringValues[b - 1];
             }
 
             public void Parse(SmBiosParser parser)
             {
-                reader = parser.reader;
-                version = parser.version;
-                type = parser.data[parser.i];
-                length = parser.data[parser.i + 1];
-                handle = BitConverter.ToInt16(parser.data, parser.i + 2);
-                parser.reader.BaseStream.Seek(parser.i + 4, SeekOrigin.Begin);
-                byte[] p_bFormattedSection;
-                byte[] p_bUnformattedSection;
-                p_bFormattedSection = parser.data.Skip(parser.i).Take(length).ToArray();
-                for (int j = parser.i + length; ; j++)
+                Reader = parser.Reader;
+                VersionBi = parser.Version;
+                //_type = parser.Data[parser.Idx];
+                _length = parser.Data[parser.Idx + 1];
+                //_handle = BitConverter.ToInt16(parser.Data, parser.Idx + 2);
+                parser.Reader.BaseStream.Seek(parser.Idx + 4, SeekOrigin.Begin);
+                byte[] P_BUnformattedSection;
+                for (int j = parser.Idx + _length; ; j++)
                 {
-                    if ((parser.data[j] == 0) && (parser.data[j + 1] == 0))
+                    if ((parser.Data[j] == 0) && (parser.Data[j + 1] == 0))
                     {
-                        p_bUnformattedSection = parser.data.Skip(parser.i + length).Take(j - parser.i - length).ToArray();
-                        parser.i = j + 2;
+                        P_BUnformattedSection = parser.Data.Skip(parser.Idx + _length).Take(j - parser.Idx - _length).ToArray();
+                        parser.Idx = j + 2;
                         break;
                     }
                 }
-                strs = new string[] { };
-                if (p_bUnformattedSection.Length > 0)
-                    strs = Encoding.ASCII.GetString(p_bUnformattedSection).Split('\0');
+                StringValues = new string[] { };
+                if (P_BUnformattedSection.Length > 0)
+                    StringValues = Encoding.ASCII.GetString(P_BUnformattedSection).Split('\0');
                 ParseBody();
-                strs = new string[] { };
-                parser.reader.BaseStream.Seek(parser.i, SeekOrigin.Begin);
+                StringValues = new string[] { };
+                parser.Reader.BaseStream.Seek(parser.Idx, SeekOrigin.Begin);
             }
 
             protected virtual void ParseBody() { }
@@ -261,48 +258,44 @@ namespace SmBiosCore
         public class TypeBios : Entry
         {
             public string Vendor;
-            public string BIOSVersion;
-            public ushort BIOSStartingSegment;
-            public string BIOSReleaseDate;
-            public byte BIOSROMSize;
-            public byte[] BIOSCharacteristics = new byte[8];
+            public string BiosVersion;
+            public ushort BiosStartingSegment;
+            public string BiosReleaseDate;
+            public byte BiosromSize;
+            public byte[] BiosCharacteristics = new byte[8];
             public byte ExtensionByte1;
             public byte ExtensionByte2;
-            public byte SystemBIOSMajorRelease;
-            public byte SystemBIOSMinorRelease;
+            public byte SystemBiosMajorRelease;
+            public byte SystemBiosMinorRelease;
             public byte EmbeddedFirmwareMajorRelease;
             public byte EmbeddedFirmwareMinorRelease;
 
             protected override void ParseBody()
             {
-                int Vendor_;
-                int BIOSVersion_;
-                int BIOSReleaseDate_;
-
                 // 2.0+
-                if (version >= SMBIOS_2_0)
+                if (VersionBi >= SMBIOS_2_0)
                 {
-                    Vendor_ = reader.ReadByte();
-                    BIOSVersion_ = reader.ReadByte(); ;
-                    BIOSStartingSegment = reader.ReadUInt16();
-                    BIOSReleaseDate_ = reader.ReadByte();
-                    BIOSROMSize = reader.ReadByte(); ;
+                    int Vendor_ = Reader.ReadByte();
+                    int BiosVersion_ = Reader.ReadByte();
+                    BiosStartingSegment = Reader.ReadUInt16();
+                    int BiosReleaseDate_ = Reader.ReadByte();
+                    BiosromSize = Reader.ReadByte();
                     for (var i = 0; i < 8; ++i)
-                        BIOSCharacteristics[i] = reader.ReadByte();
+                        BiosCharacteristics[i] = Reader.ReadByte();
 
                     Vendor = GetString(Vendor_);
-                    BIOSVersion = GetString(BIOSVersion_);
-                    BIOSReleaseDate = GetString(BIOSReleaseDate_);
+                    BiosVersion = GetString(BiosVersion_);
+                    BiosReleaseDate = GetString(BiosReleaseDate_);
                 }
                 // 2.4+
-                if (version >= SMBIOS_2_4)
+                if (VersionBi >= SMBIOS_2_4)
                 {
-                    ExtensionByte1 = reader.ReadByte();
-                    ExtensionByte2 = reader.ReadByte();
-                    SystemBIOSMajorRelease = reader.ReadByte();
-                    SystemBIOSMinorRelease = reader.ReadByte();
-                    EmbeddedFirmwareMajorRelease = reader.ReadByte();
-                    EmbeddedFirmwareMinorRelease = reader.ReadByte();
+                    ExtensionByte1 = Reader.ReadByte();
+                    ExtensionByte2 = Reader.ReadByte();
+                    SystemBiosMajorRelease = Reader.ReadByte();
+                    SystemBiosMinorRelease = Reader.ReadByte();
+                    EmbeddedFirmwareMajorRelease = Reader.ReadByte();
+                    EmbeddedFirmwareMinorRelease = Reader.ReadByte();
                 }
             }
         }
@@ -339,39 +332,32 @@ namespace SmBiosCore
 
             protected override void ParseBody()
             {
-                int DeviceLocator_;          
-                int BankLocator_;
-                int Manufacturer_;
-                int SerialNumber_;
-                int AssetTagNumber_;
-                int PartNumber_;
-
                 // 2.1+
-                if (version >= SMBIOS_2_1)
+                if (VersionBi >= SMBIOS_2_1)
                 {
-                    PhysicalArrayHandle = reader.ReadUInt16();
-                    ErrorInformationHandle = reader.ReadUInt16();
-                    TotalWidth = reader.ReadUInt16();
-                    DataWidth = reader.ReadUInt16();
-                    Size = reader.ReadUInt16();
-                    FormFactor = reader.ReadByte();
-                    DeviceSet = reader.ReadByte();
-                    DeviceLocator_ = reader.ReadByte();
-                    BankLocator_ = reader.ReadByte();
-                    MemoryType = reader.ReadByte();
-                    TypeDetail = reader.ReadUInt16();
+                    PhysicalArrayHandle = Reader.ReadUInt16();
+                    ErrorInformationHandle = Reader.ReadUInt16();
+                    TotalWidth = Reader.ReadUInt16();
+                    DataWidth = Reader.ReadUInt16();
+                    Size = Reader.ReadUInt16();
+                    FormFactor = Reader.ReadByte();
+                    DeviceSet = Reader.ReadByte();
+                    int DeviceLocator_ = Reader.ReadByte();
+                    int BankLocator_ = Reader.ReadByte();
+                    MemoryType = Reader.ReadByte();
+                    TypeDetail = Reader.ReadUInt16();
 
                     DeviceLocator = GetString(DeviceLocator_);
                     BankLocator = GetString(BankLocator_);
                 }
                 // 2.3+
-                if (version >= SMBIOS_2_3)
+                if (VersionBi >= SMBIOS_2_3)
                 {
-                    Speed = reader.ReadUInt16();
-                    Manufacturer_ = reader.ReadByte();
-                    SerialNumber_ = reader.ReadByte();
-                    AssetTagNumber_ = reader.ReadByte();
-                    PartNumber_ = reader.ReadByte();
+                    Speed = Reader.ReadUInt16();
+                    int Manufacturer_ = Reader.ReadByte();
+                    int SerialNumber_ = Reader.ReadByte();
+                    int AssetTagNumber_ = Reader.ReadByte();
+                    int PartNumber_ = Reader.ReadByte();
 
                     Manufacturer = GetString(Manufacturer_);
                     SerialNumber = GetString(SerialNumber_);
@@ -379,22 +365,22 @@ namespace SmBiosCore
                     PartNumber = GetString(PartNumber_);
                 }
                 // 2.6+
-                if (version >= SMBIOS_2_6)
+                if (VersionBi >= SMBIOS_2_6)
                 {
-                    Attributes = reader.ReadByte();
+                    Attributes = Reader.ReadByte();
                 }
                 // 2.7+
-                if (version >= SMBIOS_2_7)
+                if (VersionBi >= SMBIOS_2_7)
                 {
-                    ExtendedSize = reader.ReadUInt32();
-                    ConfiguredClockSpeed = reader.ReadUInt16();
+                    ExtendedSize = Reader.ReadUInt32();
+                    ConfiguredClockSpeed = Reader.ReadUInt16();
                 }
                 // 2.8+
-                if (version >= SMBIOS_2_8)
+                if (VersionBi >= SMBIOS_2_8)
                 {
-                    MinimumVoltage = reader.ReadUInt16();
-                    MinimumVoltage = reader.ReadUInt16();
-                    ConfiguredVoltage = reader.ReadUInt16();
+                    MinimumVoltage = Reader.ReadUInt16();
+                    MinimumVoltage = Reader.ReadUInt16();
+                    ConfiguredVoltage = Reader.ReadUInt16();
                 }
             }
         }
@@ -413,19 +399,19 @@ namespace SmBiosCore
 
             protected override void ParseBody()
             {
-                if (version >= SMBIOS_2_1)
+                if (VersionBi >= SMBIOS_2_1)
                 {
-                    Location = reader.ReadByte();
-                    Use = reader.ReadByte();
-                    ErrorCorrection = reader.ReadByte();
-                    MaximumCapacity = reader.ReadUInt32();
-                    ErrorInformationHandle = reader.ReadUInt16();
-                    NumberDevices = reader.ReadUInt16();
+                    Location = Reader.ReadByte();
+                    Use = Reader.ReadByte();
+                    ErrorCorrection = Reader.ReadByte();
+                    MaximumCapacity = Reader.ReadUInt32();
+                    ErrorInformationHandle = Reader.ReadUInt16();
+                    NumberDevices = Reader.ReadUInt16();
                 }
                 // 2.7+
-                if (version >= SMBIOS_2_7)
+                if (VersionBi >= SMBIOS_2_7)
                 {
-                    ExtendedMaximumCapacity = reader.ReadUInt64();
+                    ExtendedMaximumCapacity = Reader.ReadUInt64();
                 }
             }
         }
@@ -454,17 +440,17 @@ namespace SmBiosCore
                 int LocationInChassis_;
 
                 // 2.0+
-                if (version >= SMBIOS_2_0)
+                if (VersionBi >= SMBIOS_2_0)
                 {
-                    Manufacturer_ = reader.ReadByte();
-                    Product_ = reader.ReadByte();
-                    Version_ = reader.ReadByte();
-                    SerialNumber_ = reader.ReadByte();
-                    AssetTag_ = reader.ReadByte();
-                    FeatureFlags = reader.ReadByte();
-                    LocationInChassis_ = reader.ReadByte();
-                    ChassisHandle = reader.ReadUInt16();
-                    BoardType = reader.ReadByte();
+                    Manufacturer_ = Reader.ReadByte();
+                    Product_ = Reader.ReadByte();
+                    Version_ = Reader.ReadByte();
+                    SerialNumber_ = Reader.ReadByte();
+                    AssetTag_ = Reader.ReadByte();
+                    FeatureFlags = Reader.ReadByte();
+                    LocationInChassis_ = Reader.ReadByte();
+                    ChassisHandle = Reader.ReadUInt16();
+                    BoardType = Reader.ReadByte();
                     //NoOfContainedObjectHandles = reader.ReadByte();
                     //ContainedObjectHandles = (uint16_t*)ptr_;
                     //ptr_ += entry_.data.baseboard.NoOfContainedObjectHandles * sizeof(uint16_t);
@@ -484,7 +470,7 @@ namespace SmBiosCore
             public byte ProcessorType;
             public byte ProcessorFamily;
             public string ProcessorManufacturer;
-            public byte[] ProcessorID = new byte[8];
+            public byte[] ProcessorId = new byte[8];
             public string ProcessorVersion;
             public byte Voltage;
             public ushort ExternalClock;
@@ -514,66 +500,59 @@ namespace SmBiosCore
 
             protected override void ParseBody()
             {
-                int ProcessorVersion_;
-                int SocketDesignation_;
-                int ProcessorManufacturer_;
-                int SerialNumber_;
-                int AssetTagNumber_;
-                int PartNumber_;
-
-                // version 2.0
-                if (version >= SMBIOS_2_0)
+                // VersionBI 2.0
+                if (VersionBi >= SMBIOS_2_0)
                 {
-                    SocketDesignation_ = reader.ReadByte();
-                    ProcessorType = reader.ReadByte();
-                    ProcessorFamily = reader.ReadByte();
-                    ProcessorManufacturer_ = reader.ReadByte();
+                    int SocketDesignation_ = Reader.ReadByte();
+                    ProcessorType = Reader.ReadByte();
+                    ProcessorFamily = Reader.ReadByte();
+                    int ProcessorManufacturer_ = Reader.ReadByte();
                     for (int i = 0; i < 8; ++i)
-                        ProcessorID[i] = reader.ReadByte();
-                    ProcessorVersion_ = reader.ReadByte();
-                    Voltage = reader.ReadByte();
-                    ExternalClock = reader.ReadUInt16();
-                    MaxSpeed = reader.ReadUInt16();
-                    CurrentSpeed = reader.ReadUInt16();
-                    Status = reader.ReadByte();
-                    ProcessorUpgrade = reader.ReadByte();
+                        ProcessorId[i] = Reader.ReadByte();
+                    int ProcessorVersion_ = Reader.ReadByte();
+                    Voltage = Reader.ReadByte();
+                    ExternalClock = Reader.ReadUInt16();
+                    MaxSpeed = Reader.ReadUInt16();
+                    CurrentSpeed = Reader.ReadUInt16();
+                    Status = Reader.ReadByte();
+                    ProcessorUpgrade = Reader.ReadByte();
 
                     SocketDesignation = GetString(SocketDesignation_);
                     ProcessorManufacturer = GetString(ProcessorManufacturer_);
                     ProcessorVersion = GetString(ProcessorVersion_);
                 }
-                if (version >= SMBIOS_2_1)
+                if (VersionBi >= SMBIOS_2_1)
                 {
-                    L1CacheHandle = reader.ReadUInt16();
-                    L2CacheHandle = reader.ReadUInt16();
-                    L3CacheHandle = reader.ReadUInt16();
+                    L1CacheHandle = Reader.ReadUInt16();
+                    L2CacheHandle = Reader.ReadUInt16();
+                    L3CacheHandle = Reader.ReadUInt16();
                 }
-                if (version >= SMBIOS_2_3)
+                if (VersionBi >= SMBIOS_2_3)
                 {
-                    SerialNumber_ = reader.ReadByte();
-                    AssetTagNumber_ = reader.ReadByte();
-                    PartNumber_ = reader.ReadByte();
+                    int SerialNumber_ = Reader.ReadByte();
+                    int AssetTagNumber_ = Reader.ReadByte();
+                    int PartNumber_ = Reader.ReadByte();
 
                     SerialNumber = GetString(SerialNumber_);
                     AssetTagNumber = GetString(AssetTagNumber_);
                     PartNumber = GetString(PartNumber_);
                 }
-                if (version >= SMBIOS_2_5)
+                if (VersionBi >= SMBIOS_2_5)
                 {
-                    CoreCount = reader.ReadByte();
-                    CoreEnabled = reader.ReadByte();
-                    ThreadCount = reader.ReadByte();
-                    ProcessorCharacteristics = reader.ReadUInt16();
+                    CoreCount = Reader.ReadByte();
+                    CoreEnabled = Reader.ReadByte();
+                    ThreadCount = Reader.ReadByte();
+                    ProcessorCharacteristics = Reader.ReadUInt16();
                 }
-                if (version >= SMBIOS_2_6)
+                if (VersionBi >= SMBIOS_2_6)
                 {
-                    ProcessorFamily2 = reader.ReadUInt16();
+                    ProcessorFamily2 = Reader.ReadUInt16();
                 }
-                if (version >= SMBIOS_3_0)
+                if (VersionBi >= SMBIOS_3_0)
                 {
-                    CoreCount2 = reader.ReadUInt16();
-                    CoreEnabled2 = reader.ReadUInt16();
-                    ThreadCount2 = reader.ReadUInt16();
+                    CoreCount2 = Reader.ReadUInt16();
+                    CoreEnabled2 = Reader.ReadUInt16();
+                    ThreadCount2 = Reader.ReadUInt16();
                 }
             }
         }
