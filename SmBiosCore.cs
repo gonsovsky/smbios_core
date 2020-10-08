@@ -90,14 +90,17 @@ namespace SmBiosCore
             ObjectQuery wmiquery = new ObjectQuery("SELECT * FROM MSSmBios_RawSMBiosTables");
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, wmiquery);
             ManagementObjectCollection coll = searcher.Get();
+            var M_ByMajorVersion = 0;
+            var M_ByMinorVersion = 0;
             foreach (ManagementObject queryObj in coll)
             {
                 if (queryObj["SMBiosData"] != null) Data = (byte[])(queryObj["SMBiosData"]);
-                //if (queryObj["SmbiosMajorVersion"] != null) m_byMajorVersion = (byte)(queryObj["SmbiosMajorVersion"]);
-                //if (queryObj["SmbiosMinorVersion"] != null) m_byMinorVersion = (byte)(queryObj["SmbiosMinorVersion"]);
+                if (queryObj["SmbiosMajorVersion"] != null) M_ByMajorVersion = (byte)(queryObj["SmbiosMajorVersion"]);
+                if (queryObj["SmbiosMinorVersion"] != null) M_ByMinorVersion = (byte)(queryObj["SmbiosMinorVersion"]);
                 //if (queryObj["Size"] != null) m_dwLen = (long)(queryObj["Size"]);
                 //m_dwLen = m_pbBIOSData.Length;
             }
+            Version = (ushort) (M_ByMajorVersion << 8 | M_ByMinorVersion);
             if (Version == 0)
                 Version = SMBIOS_3_0;
         }
