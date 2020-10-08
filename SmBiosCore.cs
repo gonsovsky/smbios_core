@@ -85,15 +85,16 @@ namespace SmBiosCore
 #else
         protected void GetDmi()
         {
-            ManagementScope scope = new ManagementScope("\\\\" + "." + "\\root\\WMI");
+            var scope = new ManagementScope("\\\\" + "." + "\\root\\WMI");
             scope.Connect();
-            ObjectQuery wmiquery = new ObjectQuery("SELECT * FROM MSSmBios_RawSMBiosTables");
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, wmiquery);
-            ManagementObjectCollection coll = searcher.Get();
+            var wmiquery = new ObjectQuery("SELECT * FROM MSSmBios_RawSMBiosTables");
+            var searcher = new ManagementObjectSearcher(scope, wmiquery);
+            var coll = searcher.Get();
             var M_ByMajorVersion = 0;
             var M_ByMinorVersion = 0;
-            foreach (ManagementObject queryObj in coll)
+            foreach (var O in coll)
             {
+                var queryObj = (ManagementObject) O;
                 if (queryObj["SMBiosData"] != null) Data = (byte[])(queryObj["SMBiosData"]);
                 if (queryObj["SmbiosMajorVersion"] != null) M_ByMajorVersion = (byte)(queryObj["SmbiosMajorVersion"]);
                 if (queryObj["SmbiosMinorVersion"] != null) M_ByMinorVersion = (byte)(queryObj["SmbiosMinorVersion"]);
@@ -429,29 +430,48 @@ namespace SmBiosCore
             public byte FeatureFlags;
             public string LocationInChassis;
             public ushort ChassisHandle;
+
+            #region BoardType
             public byte BoardType;
+
+            public static Dictionary<byte, string> BoardTypeDictionary = new Dictionary<byte, string>()
+            {
+                {0x01, "Unknown"},
+                {0x02, "Other"},
+                {0x03, "Server Blade"},
+                {0x04, "Connectivity Switch"},
+                {0x05, "System Management Module"},
+                {0x06, "Processor Module"},
+                {0x07, "I/O Module"},
+                {0x08, "Memory Module"},
+                {0x09, "Daughter board"},
+                {0x0A, "Motherboard (includes processor, memory, and I/O)"},
+                {0x0B, "Processor/Memory Module"},
+                {0x0C, "Processor/IO Module"},
+                {0x0D, "Interconnect board"},
+            };
+
+            public string BoardTypeDisp =>
+                BoardTypeDictionary.TryGetValue(BoardType, out var value)
+                    ? value
+                    : BoardType.ToString() + " :Table 15";
+            #endregion
+
             //public byte NoOfContainedObjectHandles;
             //public ushort ContainedObjectHandles;
 
             protected override void ParseBody()
             {
-                int Manufacturer_;
-                int Product_;
-                int Version_;
-                int SerialNumber_;
-                int AssetTag_;
-                int LocationInChassis_;
-
                 // 2.0+
                 if (VersionBi >= SMBIOS_2_0)
                 {
-                    Manufacturer_ = Reader.ReadByte();
-                    Product_ = Reader.ReadByte();
-                    Version_ = Reader.ReadByte();
-                    SerialNumber_ = Reader.ReadByte();
-                    AssetTag_ = Reader.ReadByte();
+                    int Manufacturer_ = Reader.ReadByte();
+                    int Product_ = Reader.ReadByte();
+                    int Version_ = Reader.ReadByte();
+                    int SerialNumber_ = Reader.ReadByte();
+                    int AssetTag_ = Reader.ReadByte();
                     FeatureFlags = Reader.ReadByte();
-                    LocationInChassis_ = Reader.ReadByte();
+                    int LocationInChassis_ = Reader.ReadByte();
                     ChassisHandle = Reader.ReadUInt16();
                     BoardType = Reader.ReadByte();
                     //NoOfContainedObjectHandles = reader.ReadByte();
@@ -471,7 +491,25 @@ namespace SmBiosCore
         {
             public string SocketDesignation;
             public byte ProcessorType;
+
+            #region ProcessorFamily
             public byte ProcessorFamily;
+
+            public static Dictionary<byte, string> ProcessorFamilyDictionary = new Dictionary<byte, string>()
+            {
+                {205, "Intel® Core™ i5 processor"},
+                {206, "Intel® Core™ i3 processor"},
+                {207, "Intel® Core™ i9 processor"},
+                {208, "Available for assignment"},
+                {209, "Available for assignment"},
+            };
+
+            public string ProcessorFamilyDisp =>
+                ProcessorFamilyDictionary.TryGetValue(ProcessorFamily, out var value)
+                    ? value
+                    : ProcessorFamily.ToString() + " :Table 23";
+            #endregion
+
             public string ProcessorManufacturer;
             public byte[] ProcessorId = new byte[8];
             public string ProcessorVersion;
