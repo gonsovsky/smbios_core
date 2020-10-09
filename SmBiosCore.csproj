@@ -18,6 +18,33 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove=".git\**" />
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove=".git\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove=".git\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="SmBios.cs" />
+    <None Remove="SmBiosConst.cs" />
+    <None Remove="SmBiosCore.csproj.user" />
+    <None Remove="SmBiosCore.sln" />
+    <None Remove="SmBiosExtractor.cs" />
+    <None Remove="SmBiosStream.cs" />
+    <None Remove="SmBiosStreamUnix.cs" />
+    <None Remove="SmBiosStreamWin.cs" />
+    <None Remove="SmBiosTable.cs" />
+    <None Remove="SmBiosTableHeader.cs" />
+    <None Remove="Tables\TableBaseBoard.cs" />
+    <None Remove="Tables\TableBios.cs" />
+    <None Remove="Tables\TableMemoryDevice.cs" />
+    <None Remove="Tables\TablePhysMemory.cs" />
+    <None Remove="Tables\TableProcessor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 

@@ -1,16 +1,22 @@
 ﻿using System;
-using Newtonsoft.Json;
 
 namespace SmBiosCore
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var x = new SmBiosParser().Result;
-            var output = JsonConvert.SerializeObject(x, Formatting.Indented);
-            Console.WriteLine(output);
-            Console.ReadKey();
+            using (var stream = SmBiosExtractor.OpenRead())
+            {
+                using (var reader = new SmBiosReader(stream))
+                {
+                    using (var bios = reader.ReadBios())
+                    {
+                        Console.WriteLine(bios.ToString());
+                        Console.ReadKey();
+                    }
+                }
+            }
         }
     }
 }
