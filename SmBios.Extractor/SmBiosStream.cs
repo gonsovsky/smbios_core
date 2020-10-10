@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace SmBiosCore
+namespace SmBios.Extractor
 {
     public abstract class SmBiosStream: MemoryStream
     {

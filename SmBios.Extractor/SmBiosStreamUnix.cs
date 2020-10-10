@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SmBiosCore
+namespace SmBios.Extractor
 {
     public class SmBiosStreamUnix : SmBiosStream
     {
@@ -49,11 +49,6 @@ namespace SmBiosCore
                 // get the SMBIOS VersionBI
                 Version = Head[7] << 8 | Head[8];
             }
-
-            if (Version == 0) Version = SmBiosConst.SMBIOS_3_0;
-            // is a valid VersionBI?
-            if ((Version < SmBiosConst.SMBIOS_2_0 || Version > SmBiosConst.SMBIOS_2_8) && Version != SmBiosConst.SMBIOS_3_0)
-                InvalidData();
 
             return Data;
         }

@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net40;netcoreapp2.0</TargetFrameworks>
+    <ApplicationIcon />
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="**\*.*" Exclude="SmBios.Reader.csproj;obj\**\*.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Const.cs" />
+    <None Remove="Readers\ReaderBaseBoard.cs" />
+    <None Remove="Readers\ReaderBios.cs" />
+    <None Remove="Readers\ReaderMemory.cs" />
+    <None Remove="Readers\ReaderPhysMem.cs" />
+    <None Remove="Readers\ReaderProcessor.cs" />
+    <None Remove="Readers\TableReader.cs" />
+    <None Remove="SMbiosReader.cs" />
+    <None Remove="TableHeader.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmBios.Data\SmBios.Data.csproj" />
+  </ItemGroup>
+
+</Project>

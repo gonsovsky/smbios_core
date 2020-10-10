@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 
-namespace SmBiosCore.Tables
+namespace SmBios.Data
 {
-    public class TableBaseboard : SmBiosTable
+    public class TableBaseboard : Table
     {
         public string Manufacturer;
         public string Product;
@@ -42,31 +41,5 @@ namespace SmBiosCore.Tables
 
         //public byte NoOfContainedObjectHandles;
         //public ushort ContainedObjectHandles;
-
-        internal TableBaseboard(BinaryReader reader, SmBiosTableHeader header)
-        {
-            // 2.0+
-            if (header.VersionBi >= SmBiosConst.SMBIOS_2_0)
-            {
-                int Manufacturer_ = reader.ReadByte();
-                int Product_ = reader.ReadByte();
-                int Version_ = reader.ReadByte();
-                int SerialNumber_ = reader.ReadByte();
-                int AssetTag_ = reader.ReadByte();
-                FeatureFlags = reader.ReadByte();
-                int LocationInChassis_ = reader.ReadByte();
-                ChassisHandle = reader.ReadUInt16();
-                BoardType = reader.ReadByte();
-                //NoOfContainedObjectHandles = reader.ReadByte();
-                //ContainedObjectHandles = (uint16_t*)ptr_;
-                //ptr_ += entry_.data.baseboard.NoOfContainedObjectHandles * sizeof(uint16_t);
-                Manufacturer = header.GetString(Manufacturer_);
-                Product = header.GetString(Product_);
-                Version = header.GetString(Version_);
-                SerialNumber = header.GetString(SerialNumber_);
-                AssetTag = header.GetString(AssetTag_);
-                LocationInChassis = header.GetString(LocationInChassis_);
-            }
-        }
     }
 }

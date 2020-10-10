@@ -1,12 +1,12 @@
-﻿using System;
-#if NETCOREAPP
+﻿#if NETCOREAPP
 using System.Runtime.InteropServices;
 using System.Linq;
 #else
 using System.Management;
 #endif
+using System;
 
-namespace SmBiosCore
+namespace SmBios.Extractor
 {
     public class SmBiosStreamWin : SmBiosStream
     {
@@ -70,8 +70,7 @@ namespace SmBiosCore
             }
 
             Version = (ushort) (M_ByMajorVersion << 8 | M_ByMinorVersion);
-            if (Version == 0)
-                Version = SmBiosConst.SMBIOS_3_0;
+
             return data;
         }
 #endif

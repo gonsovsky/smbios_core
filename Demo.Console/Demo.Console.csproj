@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net40;netcoreapp2.0</TargetFrameworks>
+    <ApplicationIcon />
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmBios.Data\SmBios.Data.csproj" />
+    <ProjectReference Include="..\SmBios.Extractor\SmBios.Extractor.csproj" />
+    <ProjectReference Include="..\SmBios.Reader\SmBios.Reader.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+
+  </ItemGroup>
+
+</Project>

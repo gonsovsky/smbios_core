@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SmBiosCore
+namespace SmBios.Reader
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal static class SmBiosConst
+    internal static class Const
     {
         internal const int SMBIOS_2_0 = 0x0200;
         internal const int SMBIOS_2_1 = 0x0201;

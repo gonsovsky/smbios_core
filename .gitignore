@@ -7,3 +7,12 @@
 /obj
 /SmBiosCore.csproj.user
 /bin/Debug
+/Demo.Console/bin/Debug
+/Demo.Console/obj
+/SmBios.Data/bin/Debug
+/SmBios.Data/obj
+/SmBios.Extractor/bin/Debug
+/SmBios.Extractor/obj
+/SmBios.Reader/bin/Debug
+/SmBios.Reader/obj
+/SmBios.Reader/Readers

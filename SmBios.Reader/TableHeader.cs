@@ -1,20 +1,20 @@
-﻿namespace SmBiosCore
+﻿namespace SmBios.Reader
 {
-    internal class SmBiosTableHeader
+    internal class TableHeader
     {
         internal SmBiosReader Reader;
         internal byte Length;
         internal short Handle;
         internal byte Type;
         internal int VersionBi;
-        internal string[] StringValues = { };
+        internal string[] Values = { };
 
         internal string GetString(int b)
         {
             if (b <= 0) return "";
-            if (b > StringValues.Length)
+            if (b > Values.Length)
                 return "";
-            return StringValues[b - 1];
+            return Values[b - 1];
         }
     }
 }

@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFrameworks>net40;netcoreapp2.0</TargetFrameworks>
+    <ApplicationIcon />
+    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="**\*.*" Exclude="SmBiosCore.csproj;obj\**\*.*" />
+    <None Include="**\*.*" Exclude="SmBios.Extractor.csproj;obj\**\*.*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
@@ -27,8 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="SmBios.cs" />
-    <None Remove="SmBiosConst.cs" />
+    <None Remove="SmBios.Extractor.csproj.user" />
     <None Remove="SmBiosCore.csproj.user" />
     <None Remove="SmBiosCore.sln" />
     <None Remove="SmBiosExtractor.cs" />
@@ -36,12 +37,6 @@
     <None Remove="SmBiosStreamUnix.cs" />
     <None Remove="SmBiosStreamWin.cs" />
     <None Remove="SmBiosTable.cs" />
-    <None Remove="SmBiosTableHeader.cs" />
-    <None Remove="Tables\TableBaseBoard.cs" />
-    <None Remove="Tables\TableBios.cs" />
-    <None Remove="Tables\TableMemoryDevice.cs" />
-    <None Remove="Tables\TablePhysMemory.cs" />
-    <None Remove="Tables\TableProcessor.cs" />
   </ItemGroup>
 
   <ItemGroup>

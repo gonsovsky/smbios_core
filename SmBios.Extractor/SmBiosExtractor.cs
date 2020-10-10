@@ -1,10 +1,12 @@
-﻿#if NETCOREAPP
+﻿
+#if NETCOREAPP
 using System.Runtime.InteropServices;
+
 #else
 
 #endif
 
-namespace SmBiosCore
+namespace SmBios.Extractor
 {
     public static class SmBiosExtractor
     {
