@@ -1,5 +1,5 @@
 ﻿
-#if NETCOREAPP
+#if NETCOREAPP2_0
 using System.Runtime.InteropServices;
 
 #else
@@ -15,7 +15,7 @@ namespace SmBios.Extractor
         /// <exception cref="T:System.IO.IOException">An I/O error occurred while opening the bios.</exception>
         public static SmBiosStream OpenRead()
         {
-#if NETCOREAPP
+#if NETCOREAPP2_0
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return new SmBiosStreamWin();
             return new SmBiosStreamUnix();

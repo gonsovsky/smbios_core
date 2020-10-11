@@ -1,8 +1,7 @@
-﻿#if NETCOREAPP
+﻿#if NETCOREAPP2_0
 using System.Runtime.InteropServices;
 using System.Linq;
 #else
-using System.Management;
 #endif
 using System;
 
@@ -25,7 +24,7 @@ namespace SmBios.Extractor
             throw new ApplicationException();
         }
 
-#if NETCOREAPP
+#if NETCOREAPP2_0
         [DllImport("kernel32.dll")]
         internal static extern uint GetSystemFirmwareTable(
             uint firmwareTableProviderSignature,
@@ -46,20 +45,20 @@ namespace SmBios.Extractor
             data = data.Skip(8).ToArray();
             return data;
         }
-#else
+#elif NET40
         internal static byte[] GetDmi()
         {
-            var scope = new ManagementScope("\\\\" + "." + "\\root\\WMI");
+            var scope = new System.Management.ManagementScope("\\\\" + "." + "\\root\\WMI");
             scope.Connect();
-            var wmiquery = new ObjectQuery("SELECT * FROM MSSmBios_RawSMBiosTables");
-            var searcher = new ManagementObjectSearcher(scope, wmiquery);
+            var wmiquery = new System.Management.ObjectQuery("SELECT * FROM MSSmBios_RawSMBiosTables");
+            var searcher = new System.Management.ManagementObjectSearcher(scope, wmiquery);
             var coll = searcher.Get();
             var M_ByMajorVersion = 0;
             var M_ByMinorVersion = 0;
             byte[] data = null;
             foreach (var O in coll)
             {
-                var queryObj = (ManagementObject) O;
+                var queryObj = (System.Management.ManagementObject) O;
                 if (queryObj["SMBiosData"] != null) data = (byte[]) (queryObj["SMBiosData"]);
                 if (queryObj["SmbiosMajorVersion"] != null)
                     M_ByMajorVersion = (byte) (queryObj["SmbiosMajorVersion"]);
