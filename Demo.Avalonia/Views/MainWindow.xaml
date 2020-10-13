@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Demo.Avalonia.ViewModels;assembly=Demo.Avalonia"
+        xmlns:models="clr-namespace:Demo.Avalonia.Models;assembly=Demo.Avalonia"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+        Width="600" Height="600"
+        x:Class="Demo.Avalonia.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Demo.Avalonia">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+
+  <DockPanel LastChildFill="True">
+  <TreeView  Name="TreeView1" DockPanel.Dock="Left" Width="350"  Items="{Binding League}">
+    <TreeView.DataTemplates>
+      <TreeDataTemplate DataType="models:Conference" ItemsSource="{Binding Teams}">
+        <TextBlock FontSize="16" FontStyle="Normal" Foreground="Brown" Text="{Binding ConferenceName}" />
+      </TreeDataTemplate>
+      <TreeDataTemplate DataType="models:Team" ItemsSource="{Binding Roster}">
+        <TextBlock FontSize="16" Foreground="Green" Text="{Binding TeamName}" />
+      </TreeDataTemplate>
+      <TreeDataTemplate DataType="models:Player" ItemsSource="{Binding Positions}">
+        <TextBlock FontSize="16" Text="{Binding Name}" />
+      </TreeDataTemplate>
+      <DataTemplate DataType="models:Coach">
+        <TextBlock FontSize="16" Text="{Binding ProperName}" />
+      </DataTemplate>
+      <DataTemplate>
+        <TextBlock FontSize="16" Text="{Binding}" />
+      </DataTemplate>
+    </TreeView.DataTemplates>
+  </TreeView>
+
+    <DataGrid FontSize="16" Name="DataGrid1" Items="{Binding Props}">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Property"
+                            Binding="{Binding Property}"
+                            Width="2*" />
+        <DataGridTextColumn Header="Value"
+                            Binding="{Binding Value}"
+                            Width="2*" />
+      </DataGrid.Columns>
+    </DataGrid>
+
+  </DockPanel>
+</Window>

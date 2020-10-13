@@ -11,6 +11,8 @@
         public ushort NumberDevices;
         // 2.7+
         public ulong ExtendedMaximumCapacity;
+
+        public override string Name => "SerialNumber";
     }
 
 }

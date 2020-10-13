@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <AvaloniaResource Include="**\*.xaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.9.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SmBios.Data\SmBios.Data.csproj" />
+    <ProjectReference Include="..\SmBios.Extractor\SmBios.Extractor.csproj" />
+    <ProjectReference Include="..\SmBios.Reader\SmBios.Reader.csproj" />
+  </ItemGroup>
+</Project>

@@ -41,5 +41,6 @@ namespace SmBios.Data
 
         //public byte NoOfContainedObjectHandles;
         //public ushort ContainedObjectHandles;
+        public override string Name => Version;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace SmBios.Data
@@ -8,11 +9,20 @@ namespace SmBios.Data
     /// </summary>
     public class BiosData
     {
-        public List<TableBios> Bios = new List<TableBios>();
-        public List<TableMemoryDevice> Memory = new List<TableMemoryDevice>();
-        public List<TablePhysicalMemory> PhyMemory = new List<TablePhysicalMemory>();
-        public List<TableBaseboard> BaseBoard = new List<TableBaseboard>();
-        public List<TableProcessor> Processor = new List<TableProcessor>();
+        [DisplayName("BIOS")]
+        public List<TableBios> Bios { get; set; } = new List<TableBios>();
+
+        [DisplayName("Устройства памяти")]   
+        public List<TableMemoryDevice> Memory { get; set; } = new List<TableMemoryDevice>();
+
+        [DisplayName("Массивы памяти")]
+        public List<TablePhysicalMemory> PhyMemory { get; set; } = new List<TablePhysicalMemory>();
+
+        [DisplayName("Материнские платы")]
+        public List<TableBaseboard> BaseBoard { get; set; } = new List<TableBaseboard>();
+
+        [DisplayName("Процессоры")]
+        public List<TableProcessor> Processor { get; set; } = new List<TableProcessor>();
 
         public override string ToString()
             => JsonConvert.SerializeObject(this, Formatting.Indented);
