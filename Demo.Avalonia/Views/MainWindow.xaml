@@ -15,7 +15,7 @@
   </Design.DataContext>
 
   <DockPanel LastChildFill="True">
-  <TreeView  Name="TreeView1" DockPanel.Dock="Left" Width="350"  Items="{Binding League}">
+  <TreeView  Name="TreeView1" DockPanel.Dock="Left" Width="300"  Items="{Binding League}">
     <TreeView.DataTemplates>
       <TreeDataTemplate DataType="models:Conference" ItemsSource="{Binding Teams}">
         <TextBlock FontSize="16" FontStyle="Normal" Foreground="Brown" Text="{Binding ConferenceName}" />

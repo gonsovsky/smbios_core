@@ -1,20 +1,37 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace SmBios.Data
 {
     public class TableBaseboard : Table
     {
-        public string Manufacturer;
-        public string Product;
-        public string Version;
-        public string SerialNumber;
-        public string AssetTag;
-        public byte FeatureFlags;
-        public string LocationInChassis;
-        public ushort ChassisHandle;
+        [DisplayName("Производитель")]
+        public string Manufacturer { get; set; }
+
+        [DisplayName("Продукт")]
+        public string Product { get; set; }
+
+        [DisplayName("Версия")]
+        public string Version { get; set; }
+
+        [DisplayName("Серийный номер")]
+        public string SerialNumber { get; set; }
+
+        [Browsable(false)]
+        public string AssetTag { get; set; }
+
+        [Browsable(false)]
+        public byte FeatureFlags { get; set; }
+
+        [Browsable(false)]
+        public string LocationInChassis { get; set; }
+
+        [Browsable(false)]
+        public ushort ChassisHandle { get; set; }
 
         #region BoardType
-        public byte BoardType;
+        [Browsable(false)]
+        public byte BoardType { get; set; }
 
         public static Dictionary<byte, string> BoardTypeDictionary = new Dictionary<byte, string>()
             {
@@ -33,6 +50,7 @@ namespace SmBios.Data
                 {0x0D, "Interconnect board"},
             };
 
+        [DisplayName("Тип")]
         public string BoardTypeDisp =>
             BoardTypeDictionary.TryGetValue(BoardType, out var value)
                 ? value
@@ -41,6 +59,8 @@ namespace SmBios.Data
 
         //public byte NoOfContainedObjectHandles;
         //public ushort ContainedObjectHandles;
+
+        [Browsable(false)]
         public override string Name => Version;
     }
 }

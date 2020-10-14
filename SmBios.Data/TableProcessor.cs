@@ -131,6 +131,7 @@ namespace SmBios.Data
         [DisplayName("Тег имущества")]
         public string AssetTagNumber { get; set; }
 
+        [DisplayName("Шифр компонента")]
         [Browsable(false)]
         public string PartNumber { get; set; }
         // 2.5+
