@@ -10,21 +10,30 @@ namespace SmBios.Data
     public class BiosData
     {
         [DisplayName("BIOS")]
-        public List<TableBios> Bios { get; set; } = new List<TableBios>();
+        public List<TableBios> Bios { get; set; }
 
         [DisplayName("Устройства памяти")]   
-        public List<TableMemoryDevice> Memory { get; set; } = new List<TableMemoryDevice>();
+        public List<TableMemoryDevice> Memory { get; set; }
 
         [DisplayName("Массивы памяти")]
-        public List<TablePhysicalMemory> PhyMemory { get; set; } = new List<TablePhysicalMemory>();
+        public List<TablePhysicalMemory> PhyMemory { get; set; } 
 
         [DisplayName("Материнские платы")]
-        public List<TableBaseboard> BaseBoard { get; set; } = new List<TableBaseboard>();
+        public List<TableBaseboard> BaseBoard { get; set; }
 
         [DisplayName("Процессоры")]
-        public List<TableProcessor> Processor { get; set; } = new List<TableProcessor>();
+        public List<TableProcessor> Processor { get; set; }
 
         public override string ToString()
-            => JsonConvert.SerializeObject(this, Formatting.Indented);
+        {
+            var opts = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                Formatting = Formatting.Indented
+            };
+            var x = JsonConvert.SerializeObject(this, opts);
+            return x;
+        }
+           
     }
 }
